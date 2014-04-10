@@ -1,0 +1,9 @@
+{application, hackney_test, [
+  {description, ""},
+  {vsn, "0.0.1"},
+  {modules, []},
+  {registered, []},
+  {applications, [hackney]},
+  {mod, {hackney_test, []}},
+  {env, []}
+]}.
