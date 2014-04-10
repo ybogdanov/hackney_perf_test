@@ -3,6 +3,7 @@
 %%! -smp enable
 
 -mode(compile).
+-define(pool, test).
 
 main([Ns, Cs]) ->
   [code:add_path(P) || P <- filelib:wildcard("./deps/*/ebin")],
@@ -11,13 +12,12 @@ main([Ns, Cs]) ->
   N = list_to_integer(Ns),
   C = list_to_integer(Cs),
 
-  PoolName = test,
-  Options = [{timeout, 1000000}, {pool_size, C}],
-  ok = hackney_pool:start_pool(PoolName, Options),
+  Options = [{timeout, 10000}, {pool_size, C}],
+  ok = hackney_pool:start_pool(?pool, Options),
 
-  {Time, Items} = timer:tc(fun run_par_pool/2, [PoolName, N]),
+  {Time, Items} = timer:tc(fun run_par_pool/1, [N]),
 
-  hackney_pool:stop_pool(PoolName),
+  hackney_pool:stop_pool(?pool),
   Succeed = length([1 || {ok,_} <- Items]),
 
   TimeSec = Time / 1000000,
@@ -25,17 +25,14 @@ main([Ns, Cs]) ->
     [TimeSec, round(length(Items) / TimeSec), Succeed, length(Items)]),
   ok.
 
-run_par_pool(PoolName, N) ->
+run_par_pool(N) ->
   pmap(fun(N1) -> 
     Data = [integer_to_list(N1), " data"],
-    put_object(Data, PoolName)
+    put_object(Data)
   end, lists:seq(1, N)).
 
-put_object(Data, PoolName) ->
-  Options = case PoolName of
-    none -> [];
-    Other -> [{pool, Other}]
-  end,
+put_object(Data) ->
+  Options = [{pool, ?pool}],
 
   HTTPHeaders = [
     {<<"content-type">>, <<"text/plain">>}
