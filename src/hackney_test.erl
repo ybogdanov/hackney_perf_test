@@ -76,14 +76,10 @@ run_par_pool(PoolName, N, P) ->
 put_object(Key, Data) -> put_object(Key, Data, none).
 
 put_object(Key, Data, PoolName) ->
-  s3:configure(
-    application:get_env(hackney_test, aws_key, undefined), 
-    application:get_env(hackney_test, aws_secret, undefined)
-  ),
   Key1 = <<"perf_test/", Key/binary>>,
 
   Options = [
-    {acl, private}
+    % {acl, private}
   ],
 
   Options1 = case PoolName of
@@ -103,14 +99,17 @@ put_object(Key, Data, PoolName) ->
   Res.
 
 do_req(Bucket, Key, Data, Options, HTTPHeaders) ->
-  % URL = <<"http://requestb.in/1iz4ev71">>,
-  % {ok, _StatusCode, _RespHeaders, ClientRef} = hackney:request(put, URL, HTTPHeaders, Data, Options),
-  % {ok, R} = hackney:body(ClientRef), 
-  % io:format("R=~p~n", [R]) ,
-  % [{version_id,_}].
-  R = (catch s3:put_object(Bucket, Key, Data, Options, HTTPHeaders)),
-  dump_error(R),
-  R.
+  URL = <<"https://requestb.in/1iz4ev71">>,
+  {ok, _StatusCode, _RespHeaders, ClientRef} = hackney:request(put, URL, HTTPHeaders, Data, Options),
+  {ok, R} = hackney:body(ClientRef),
+  [{version_id,1}].
+  % s3:configure(
+  %   application:get_env(hackney_test, aws_key, undefined), 
+  %   application:get_env(hackney_test, aws_secret, undefined)
+  % ),
+  % R = (catch s3:put_object(Bucket, Key, Data, Options, HTTPHeaders)),
+  % dump_error(R),
+  % R.
 
 dump_error({'EXIT', Error}) ->
   io:format("Error: ~p~n", [Error]);
