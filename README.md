@@ -4,7 +4,7 @@ Build
 	
 Run
 
-	AWS_KEY=XXX AWS_SECRET=XXX ./run.sh
+	./run.sh
 
 See `error_report.txt` for my results.
 
